@@ -5,14 +5,55 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebGL</title>
+    <script>
+        const vertexShader = `
+            attribute vec2 aCoords;
+            void main() {
+                gl_Position = vec4(aCoords, 0, 1);
+            }
+        `
+        const fragmetnShader = `
+            precision mediump float;
+            void main() {
+                gl_FragColor = vec4(1,0,0,1);
+            }
+        `
+        let g;
+
+        let prog;
+        let aCoordsLoc;
+    
+        function createProgram(g, vShaderSrc, fShaderSrc) {
+            let vShader = g.createShader(vShaderSrc);
+            g.shaderSource(vShader,vShaderSrc);
+            g.compileShader(vShader);
+
+            let fShader = g.createShader(fShaderSrc);
+            g.shaderSource(fShader,fShaderSrc);
+            g.compileShader(fShader);
+
+            prog = g.createProgram();
+            g.attachShader(prog, vShader);
+            g.attachShader(prog, fShader);
+            g.linkProgram(prog);
+
+            return prog;
+        }
+
+        // gets the points that were clicked and draws object at those points
+        function draw(xClick, yClick) {
+            
+        }
+
+        function init() {
+            let canvas = document.getElementById("myCanvas");
+            g = canvas.getContext("webgl");
+        }
+        
+    </script>  
 </head>  
 <body>
     <canvas width="600" height="600" id="myCanvas">
     </canvas>
 </body>
-<script>
-    let canvas = document.getElementById("myCanvas");
-    let g = canvas.getContext("webgl");
-    
-</script>  
 </html>
