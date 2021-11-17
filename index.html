@@ -8,18 +8,23 @@
     <script>
         const vertexShader = `
             attribute vec2 aCoords;
+            uniform vec2 uTranslation;
             void main() {
-                gl_Position = vec4(aCoords, 0, 1);
+                float x = -1.0 + 2.0*((aCoords.x + uTranslation.x) / 600.0);
+                float y = 1.0 - 2.0*((aCoords.y + uTranslation.y) / 600.0);
+                gl_Position = vec4(x, y , 0.0, 1.0);
             }
         `;
         const fragmetnShader = `
             precision mediump float;
             void main() {
-                gl_FragColor = vec4(0,1,0,1);
+                gl_FragColor = vec4(0.0,1.0,0.0,1.0);
             }
         `;
         let g;
         let aCoordsLoc;
+        let uTranslationLoc;
+        let shapeDataBuffer;
     
         function createProgram(g, vShaderSrc, fShaderSrc) {
             let vShader = g.createShader(g.VERTEX_SHADER);
@@ -46,11 +51,14 @@
 
         // gets the points that were clicked and draws object at those points
         function draw(xClick, yClick) {
-            console.log("Called")
-
-            // Create the buffer, bind the buffer, bind the data to the buffer, tell it how to split the data, draw arrays
-            let shapeDataBuffer = g.createBuffer();
+            console.log(xClick + "  " + yClick)
+            g.uniform2f(uTranslationLoc, xClick, yClick)
             g.bindBuffer(g.ARRAY_BUFFER, shapeDataBuffer);
+            g.vertexAttribPointer(aCoordsLoc, 2, g.FLOAT, false, 0, 0);
+            g.drawArrays(g.TRIANGLE_FAN, 0, 32);
+        }
+
+        function createBuffer() {
             let coords = new Float32Array(64);
             let k = 0;  // index into the coords array
             for (let i = 0; i < 32; i++) {
@@ -58,16 +66,18 @@
                 coords[k++] = 2*Math.cos(angle);  // x-coord of vertex
                 coords[k++] = 2*Math.sin(angle);  // y-coord of vertex
             }
-            g.bufferData(g.ARRAY_BUFFER,coords,g.STATIC_DRAW);
-            g.vertexAttribPointer(aCoordsLoc, 2, g.FLOAT, false, 0, 0);
-            g.drawArrays(g.TRIANGLE_FAN, 0, 32);
+            shapeDataBuffer = g.createBuffer();
+            g.bindBuffer(g.ARRAY_BUFFER, shapeDataBuffer);
+            g.bufferData(g.ARRAY_BUFFER, coords, g.STATIC_DRAW);
         }
 
         function initGL() {
             let prog = createProgram(g,vertexShader,fragmetnShader);
             g.useProgram(prog)
             aCoordsLoc = g.getAttribLocation(prog,"aCoords");
+            uTranslationLoc = g.getUniformLocation(prog,"uTranslation");
             g.enableVertexAttribArray(aCoordsLoc);
+            createBuffer();
             g.clearColor(0.1,0.2,0.2,1);
             g.clear(g.COLOR_BUFFER_BIT);
         }
@@ -75,13 +85,11 @@
         function init() {
             let canvas = document.getElementById("myCanvas");
             g = canvas.getContext("webgl");
+            initGL();
 
             canvas.addEventListener("click", function(event) {
                 draw(event.clientX, event.clientY);
-                console.log("CLICKED")
-            }, false)
-
-            initGL();
+            }, false);
             
         }
     </script>  
