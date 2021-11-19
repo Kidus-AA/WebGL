@@ -18,7 +18,7 @@
         const fragmetnShader = `
             precision mediump float;
             void main() {
-                gl_FragColor = vec4(0.0,1.0,0.0,1.0);
+                gl_FragColor = vec4(1.0,0.0,0.0,1.0);
             }
         `;
         let g;
@@ -51,7 +51,6 @@
 
         // gets the points that were clicked and draws object at those points
         function draw(xClick, yClick) {
-            console.log(xClick + "  " + yClick)
             g.uniform2f(uTranslationLoc, xClick, yClick)
             g.bindBuffer(g.ARRAY_BUFFER, shapeDataBuffer);
             g.vertexAttribPointer(aCoordsLoc, 2, g.FLOAT, false, 0, 0);
@@ -84,11 +83,20 @@
 
         function init() {
             let canvas = document.getElementById("myCanvas");
-            g = canvas.getContext("webgl");
+            let options = {  // no need for alpha channel or depth buffer in this program,
+                         // but we need to preserve the image in the drawingBuffer
+            alpha: false,
+            depth: false,
+            preserveDrawingBuffer: true
+        };
+            g = canvas.getContext("webgl", {preserveDrawingBuffer: true});
             initGL();
 
-            canvas.addEventListener("click", function(event) {
-                draw(event.clientX, event.clientY);
+            canvas.addEventListener("click", function(event) {   
+                let env = canvas.getBoundingClientRect();
+                let x = event.clientX - env.left;
+                let y = event.clientY - env.top;
+                draw(x, y);
             }, false);
             
         }
